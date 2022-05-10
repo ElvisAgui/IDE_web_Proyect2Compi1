@@ -1,0 +1,15 @@
+ documentacion oficial jison
+ https://gerhobbelt.github.io/jison/docs/
+ 
+ 
+ lista de videos jison 
+ https://www.youtube.com/channel/UCJew7B3LeW6OnyXUL_3HewQ
+ 
+ ejemplo implementacion jison angular
+ https://github.com/devemg/angular-jison/blob/main/src/app/app.component.ts
+ 
+ ejmplo de jison AST
+ https://github.com/tomuch94/TALLER_JISON/blob/master/Gramatica_Recursiva_Izquierda/gri.jison
+ 
+ jison ejemplo 
+ https://ericknavarro.io/2019/07/21/17-Mi-primer-proyecto-utilizando-Jison-Linux/

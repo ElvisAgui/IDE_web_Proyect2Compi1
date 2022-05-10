@@ -1,0 +1,17 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~codemirror/lib/codemirror';
+@import '~codemirror/theme/material';
+
+.ngx-codemirror {
+    border: 1px solid #ccc;
+  }
+
+body{
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100%;
+    font-family: 'Numans', sans-serif;
+    background-color: rgba(42, 206, 247, 0.5) !important;
+
+    }
+

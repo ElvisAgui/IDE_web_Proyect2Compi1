@@ -1,0 +1,31 @@
+<body>
+    <div class="container">
+        <div class="card">
+          <div class="card-body">
+            <h6>Descripcion de la edicion</h6>
+            <div class="input-group">
+              <span class="input-group-text">Area Texto</span>
+              <ngx-codemirror
+                [(ngModel)]="entrada"
+                [options]="{
+                lineNumbers: true,
+                theme: 'material',
+                mode: 'markdown'
+                }"
+                class="form-control" aria-label="With textarea">
+              </ngx-codemirror>
+            </div>
+            <div class="card-body">
+              <button class="btn btn-danger" (click)="analizar()">boton</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="input-group">
+              <span class="input-group-text">Consola</span>
+              <textarea class="form-control" aria-label="With textarea"
+              >{{salida}}</textarea>
+            </div>
+          </div>
+        </div>
+    </div>    
+</body>
