@@ -4,19 +4,27 @@ export class ManejoErrors {
     errores:Array<Token>
     enEspera:Array<Token>
     nombreArch!:string
+    parser!: any
+    instrucciones:string = ""
+    capturarInstruciones:  boolean = false
     
     constructor(){
         this.errores = new Array
         this.enEspera = new Array
     }
 
+    public setParser(parser: any){
+    }
+
     public capturarErrorSemantico(descripcion:string){
-        if (this.enEspera.length != 0) {
+        if (this.enEspera.length > 1) {
             let tok = new Token()
-            let tokTem: Token = this.enEspera[this.enEspera.length-1];
+            let tokTem: Token = this.enEspera[this.enEspera.length-2];
             tok.constructorToken(tokTem.lexeme,tokTem.line,tokTem.column,descripcion,"Semantico",this.nombreArch);
             this.errores.push(tok)
             this.limpiarEnEspera()
+        }else if (this.enEspera.length != 0) {
+            
         }
     }
 
@@ -56,8 +64,21 @@ export class ManejoErrors {
         let tok = new Token()
         tok.inicializarVal(lexeme,line,columm)
         this.enEspera.push(tok)
+        this.capturarLexemasInstruciones(lexeme+"")
+    }
+
+    public capturaTokenstring(lexeme:String, line:number, columm: number){
+        let tok = new Token()
+        tok.inicializarVal(lexeme,line,columm)
+        this.enEspera.push(tok)
+        this.capturarLexemasInstruciones("\""+lexeme+"\"")
     }
     
+    public capturaToken(lexeme:String, line:number, columm: number){
+        let tok = new Token()
+        tok.inicializarVal(lexeme,line,columm)
+        this.enEspera.push(tok)
+    }
 
     public limpiarEnEspera(){
         this.enEspera.splice(0,this.enEspera.length)
@@ -73,6 +94,21 @@ export class ManejoErrors {
             const element = this.errores[index];
             console.log(element.description+"  "+element.lexeme)
         }
+    }
+
+    public capturarLexemasInstruciones(lexeme:string){
+        if (lexeme == "\t" || this.capturarInstruciones) {
+            this.capturarInstruciones = true
+            if (lexeme == "\n") {
+                this.capturarInstruciones= false
+            }
+            this.instrucciones += ""+lexeme
+        }
+
+    }
+
+    public limpiarInstruciones(){
+        this.instrucciones = ""
     }
     
 

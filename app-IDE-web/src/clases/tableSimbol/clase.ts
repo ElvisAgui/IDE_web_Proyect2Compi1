@@ -84,8 +84,33 @@ export class Clase {
     
     public capturarParametros(identificador:string, tipo:TipoVar){
         if (this.funciones.length != 0 && !this.funciones[this.funciones.length-1].paramRepit(identificador) ) {
-            this.funciones[this.funciones.length-1].parametros.push(new Variables(identificador,tipo,this.funciones[this.funciones.length-1].identificado+"",this.errores,null))
+            this.funciones[this.funciones.length-1].parametros.push(new Variables(identificador,tipo,this.funciones[this.funciones.length-1].identificado+"",this.errores,this.contenidoParametroTems(tipo)))
         }
+    }
+
+    private contenidoParametroTems(tipo:TipoVar): any{
+        let contenido
+        switch (tipo) {
+            case TipoVar.BOOLEAN:
+                contenido = true
+                break;
+            case TipoVar.CHAR:
+                contenido = "h"
+                break;
+            case TipoVar.STRING:
+                contenido = "ssss"
+                break;
+            case TipoVar.INT:
+                contenido = 1
+                break;
+            case TipoVar.DOUBLE:
+                contenido = 1.5
+                break;
+            default:
+                break;
+        }
+
+        return contenido
     }
 
     public funcionYaExiste():boolean{
@@ -143,9 +168,61 @@ export class Clase {
         return inde
     }
     
-    
+    public capturarVariableFuncion(tipo: TipoVar, contenido:any){
+        if (this.funciones.length != 0) {
+           for (let index = 0; index < this.items.length; index++) {
+               const item = this.items[index];
+               if (!this.funciones[this.funciones.length-1].varExistente(item+"")) {
+                   this.funciones[this.funciones.length-1].variables.push(new Variables(item,tipo,this.funciones[this.funciones.length-1].identificado+"",this.errores,contenido))
+               }
+           }
+        }
+        this.limpiarItems()
+    }
 
 
-    
+    public hayFunciones(): boolean{
+        return  this.funciones.length != 0
+    }
+
+    public capturarInstruccioneFuncion(){
+        if (this.hayFunciones()) {
+            this.funciones[this.funciones.length-1].caputrarInstrucciones()
+        }
+    }
+
+    public valorVariable(identificador: string): any{
+        let contenido =  null
+        for (let index = 0; index < this.variables.length; index++) {
+            const variable = this.variables[index];
+            if (variable.nombre == identificador) {
+                contenido = variable.contenido
+                break
+            }
+        }
+        return contenido
+    }
+
+
+    public valorFuncion(identificado:string, parametrosBusqued:Array<any>, parser: any): any{
+        let contenido = null
+        if (this.hayFunciones()) {
+            for (let index = 0; index < this.funciones.length; index++) {
+                const funcion = this.funciones[index];
+                if (funcion.busquedaParamId(identificado, parametrosBusqued)) {
+                    if (!funcion.isFuncion()) {
+                        //error no es funcion por lo tanto no tiene retorno
+                        this.errores.capturarErrorSemantico("Uso incorecto del metodo, no tiene retorno "+identificado);
+                        contenido =0
+                    }else{
+                        funcion.realizarInstrucciones(parser, funcion)
+                        contenido = funcion.retornoBasura()
+                    }
+                    break
+                }
+            }
+        }
+        return contenido
+    }
 
 }
