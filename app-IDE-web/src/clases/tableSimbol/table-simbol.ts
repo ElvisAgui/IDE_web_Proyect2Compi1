@@ -1,3 +1,4 @@
+import { Archivos } from 'src/clases/archivos';
 import { ManejoErrors } from '../manejoErrors/manejo-errors';
 import { Clase } from './clase';
 import { Funcion } from './funcion';
@@ -11,14 +12,20 @@ export class TableSimbol {
     errores!:ManejoErrors
     scope:number = 0
     parser!: any  
+    parseG!:any
     parametrosBusqued:Array<any> = new  Array
     scopeVerific = 0
     control: Array<number> = new Array
     scopeMax = 1
+    archivos:Array<Archivos> = new Array
+    nombresImports: Array<string> = new Array
+    textoSalida:string = ""
 
-    constructor(errores: ManejoErrors){
+
+    constructor(errores: ManejoErrors, archivos:Array<Archivos>){
         this.clases = new Array
         this.errores = errores
+        this.archivos = archivos
         this.claseTem.setErrors(errores)
     }
     
@@ -29,6 +36,38 @@ export class TableSimbol {
         clase.variables = this.claseTem.variables
         this.clases.push(clase)
         this.claseTem.limpiarArrays();
+    }
+
+    public anlizarImport(nameImport:string){
+        let index = this.importValido(nameImport)
+        if ( index != -1) {
+            this.archivos[index].yaCompilado = true
+            this.nombresImports.push(this.archivos[index].name)
+            this.errores.setNombreArch(this.archivos[index].name)
+            this.parseG.parse(this.archivos[index].texto)
+            this.nombresImports.pop()
+            this.errores.setNombreArch(this.nombresImports[this.nombresImports.length-1])
+            this.errores.limpiarEnEspera()
+        }
+    }
+
+    private importValido(nameImport:string):number{
+        let pos = -1
+        console.log(nameImport)
+        for (let index = 0; index < this.archivos.length; index++) {
+            const archivo = this.archivos[index];
+            if (nameImport == archivo.name) {
+                pos = index
+                break
+            }
+        }
+        if (pos == -1) {
+            this.errores.capturarErrorSemantico("Importacion invalida, archivo inexistente")
+        }else if (this.archivos[pos].yaCompilado){
+            //el archivo ya ha sido compilado xd
+            pos == -1
+        }
+        return pos
     }
     
 
@@ -177,16 +216,13 @@ export class TableSimbol {
         }
     }
 
-    public validarPara(){
 
-    }
-
-  public valoFuncion(identificador: string): any{
-    let contenido = this.claseTem.valorFuncion(identificador, this.parametrosBusqued, this.parser) 
+  public valoFuncion(identificador: string, conRetorno: boolean, ejectar:boolean): any{
+    let contenido = this.claseTem.valorFuncion(identificador, this.parametrosBusqued, this.parser, conRetorno, ejectar) 
     if (contenido == null) {
         for (let index = 0; index < this.clases.length; index++) {
             const clase = this.clases[index];
-            contenido = clase.valorFuncion(identificador, this.parametrosBusqued, this.parser)
+            contenido = clase.valorFuncion(identificador, this.parametrosBusqued, this.parser,conRetorno, ejectar)
             if (contenido != null) {
                 break
             }
@@ -268,11 +304,59 @@ export class TableSimbol {
         return contenido
    }
   
-    public verifcarStrinMientras(valor:any){
-        if ("string" != typeof valor) {
-            this.errores.capturarErrorSemantico("el valor en la funcion Mostrar no es String")
+  public verificadorRetorno(valor:any){
+      let tipo = this.claseTem.funciones[this.claseTem.funciones.length-1].tipo;
+       if (tipo == TipoVar.VOID) {
+           this.errores.capturarErrorSemantico("error en el retorno del Metodo")
+           this.claseTem.funciones[this.claseTem.funciones.length-1].retorno = 0;
+       }else{
+        if ("number" == typeof valor ) {
+            if (Number.isInteger(valor) && tipo != TipoVar.INT) {
+                this.errores.capturarErrorSemantico("Error en el retorno de la funcion")
+            }else if (!Number.isInteger(valor) && tipo != TipoVar.DOUBLE) {
+              this.errores.capturarErrorSemantico("Error en el retorno de la funcion")
+            }
+         } else if("string" == typeof valor && valor.length == 1) {
+             if (tipo != TipoVar.CHAR) {
+              this.errores.capturarErrorSemantico("Error en el retorno de la funcion")
+             }
+         }else if ("string" == typeof valor && valor.length != 1) {
+          if (tipo != TipoVar.STRING) {
+              this.errores.capturarErrorSemantico("Error en el retorno de la funcion")
+             }
+         }else{
+             if ("boolean" == typeof valor && tipo != TipoVar.BOOLEAN) {
+              this.errores.capturarErrorSemantico("Error en el retorno de la funcion") 
+             }
+         }
+         this.claseTem.funciones[this.claseTem.funciones.length-1].retornoBasura()
+       }
+       
+  }
+
+  public verificarReturnMetod(){
+    let tipo = this.claseTem.funciones[this.claseTem.funciones.length-1].tipo;
+    if (tipo != TipoVar.VOID) {
+        this.errores.capturarErrorSemantico("Error en el retorno de la funcion") 
+        this.claseTem.funciones[this.claseTem.funciones.length-1].retorno = 0
+    }
+  }
+
+  public actulizarValorVAr(idd:string, contenido:any){
+    for (let index = 0; index < this.claseTem.variables.length; index++) {
+        const vari = this.claseTem.variables[index];
+        if (vari.nombre == idd) {
+            vari.contenido = contenido
+            break
         }
     }
+  }
+
+  public existReturn(){
+    if (this.claseTem.funciones[this.claseTem.funciones.length-1].retorno == null && this.claseTem.funciones[this.claseTem.funciones.length-1].tipo != TipoVar.VOID) {
+        this.errores.capturarErrorSemantico("la funcion no tiene Retorno")
+    }
+  }
 
     
 

@@ -9,6 +9,7 @@ export class Clase {
     variables: Array<Variables>
     items: Array<String>
     errores!:ManejoErrors
+    textSali:string = ""
 
     constructor(){
         this.funciones = new Array
@@ -204,19 +205,31 @@ export class Clase {
     }
 
 
-    public valorFuncion(identificado:string, parametrosBusqued:Array<any>, parser: any): any{
+    public valorFuncion(identificado:string, parametrosBusqued:Array<any>, parser:any, conRetono:boolean, ejecu:boolean): any{
         let contenido = null
         if (this.hayFunciones()) {
             for (let index = 0; index < this.funciones.length; index++) {
                 const funcion = this.funciones[index];
                 if (funcion.busquedaParamId(identificado, parametrosBusqued)) {
                     if (!funcion.isFuncion()) {
-                        //error no es funcion por lo tanto no tiene retorno
-                        this.errores.capturarErrorSemantico("Uso incorecto del metodo, no tiene retorno "+identificado);
-                        contenido =0
-                    }else{
-                        funcion.realizarInstrucciones(parser, funcion)
-                        contenido = funcion.retornoBasura()
+                        if (conRetono) {
+                            //error no es funcion por lo tanto no tiene retorno
+                            this.errores.capturarErrorSemantico("Uso incorecto del metodo, no tiene retorno "+identificado);
+                            contenido =0
+                        } else {
+                            if (ejecu) {
+                                funcion.realizarInstrucciones(parser, funcion)
+                            }
+                            contenido = 0
+                        }
+                    }else {
+                        if (ejecu) {
+                            funcion.realizarInstrucciones(parser, funcion)
+                            //retornar valor verdadero
+                            contenido = funcion.getRetorno()
+                        }else{
+                            contenido = funcion.retornoBasura() 
+                        }
                     }
                     break
                 }

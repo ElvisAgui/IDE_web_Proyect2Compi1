@@ -4,7 +4,6 @@ export class ManejoErrors {
     errores:Array<Token>
     enEspera:Array<Token>
     nombreArch!:string
-    parser!: any
     instrucciones:string = ""
     capturarInstruciones:  boolean = false
     
@@ -13,8 +12,7 @@ export class ManejoErrors {
         this.enEspera = new Array
     }
 
-    public setParser(parser: any){
-    }
+  
 
     public capturarErrorSemantico(descripcion:string){
         if (this.enEspera.length > 1) {
@@ -61,9 +59,11 @@ export class ManejoErrors {
     }
 
     public capturaTokens(lexeme:String, line:number, columm: number){
-        let tok = new Token()
-        tok.inicializarVal(lexeme,line,columm)
-        this.enEspera.push(tok)
+        if (lexeme != "\n") {
+            let tok = new Token()
+            tok.inicializarVal(lexeme,line,columm)
+            this.enEspera.push(tok)
+        }
         this.capturarLexemasInstruciones(lexeme+"")
     }
 
@@ -109,6 +109,12 @@ export class ManejoErrors {
 
     public limpiarInstruciones(){
         this.instrucciones = ""
+    }
+
+    public capturaErrorLexico(line:number, column:number, lexeme:string){
+        let token = new Token()
+        token.constructorToken(lexeme,line, column,"Este simbolo no pertenece al lenguaje","Lexico", this.nombreArch)
+        this.errores.push(token)
     }
     
 

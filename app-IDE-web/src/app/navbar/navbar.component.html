@@ -17,7 +17,7 @@
               </a>
           </li>
           <li class="nav-item active">
-            <a class="nav-link btn btn-link" (click)="analizar()" >
+            <a class="nav-link btn btn-link" >
               Ejecutar Archivo
               <span class="sr-only"></span>
               </a>
@@ -42,39 +42,3 @@
       
     </div>
   </nav>
-
-<body>
-  <div class="card">
-    <div class="card-body">
-      <div class="btn-group" role="group" aria-label="Basic example">
-        <div *ngFor="let archivo of archivos let i= index">
-          <button type="button" (click)="settearText(archivo.name)" class="btn btn-dark">{{archivo.name}}</button>
-        </div>
-      </div>
-      <ngx-codemirror
-      [(ngModel)]="entrada"
-      [options]="{
-      lineNumbers: true,
-      theme: 'material',
-      mode: 'markdown'
-      }"
-      class="form-control" aria-label="With textarea">
-    </ngx-codemirror>
-    </div>
-    <div class="card-body">
-      <label class="btn btn-primary"> <input type="file" (change)="fileUploadInAngular($event)"/> Cargar </label>  
-    </div>
-    <div class="card-body">
-      <h6>Consola</h6>
-      <ngx-codemirror
-      [(ngModel)]="salida"
-      [options]="{
-      lineNumbers: false,
-      theme: 'material',
-      mode: 'markdown'
-      }"
-      class="form-control" aria-label="With textarea">
-    </ngx-codemirror>
-    </div>
-  </div>   
-</body>

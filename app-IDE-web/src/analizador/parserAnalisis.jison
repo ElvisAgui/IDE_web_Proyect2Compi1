@@ -11,12 +11,14 @@ let capturarOperadors = false
 %lex
 %options case-sensitive
 %%
-[\t]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); console.log("un identador"); return 'IDENTADOR'}
+"!!".*	                             {/*Comentario de una linea*/}
+\'\'\'(.|\f|\n|\r|\s|\t)*\'\'\'      {/*comentrio multilinea xd*/    }
+[\t]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'IDENTADOR'}
 [\n]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'SALTO'} 
 [\r|\s|\f]+                         { Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); /*ignoramos */  }                
 "Importar"                          {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'IMPORT'}
 "."                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'PUNTO'}
-"clr"                               {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'EXTENSIONCLR'} 
+"crl"                               {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'EXTENSIONCLR'} 
 "Incerteza"                         {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'INSERTEZA'}
 "true"                              {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'TRUE'}
 "false"                             {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'FALSE'}
@@ -37,9 +39,9 @@ let capturarOperadors = false
 "<"                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'MENORQ'}
 ">"                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'MAYORQ'}
 "~"                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'SIGINSERTEZA'}
-"|&"                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'XOR'}
 "&&"                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'AND'}
-"||"                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'OR'}
+'||'                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'OR'}
+'|&'                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'XOR'}
 "Retorno"                           {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'RETURN'}
 "Principal"                         {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'PRINCIPAL'}
 "Sino"                              {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'SINO'}
@@ -71,7 +73,7 @@ let capturarOperadors = false
 "("                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'PARENTESISA'}
 ")"                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'PARENTESISC'}
 <<EOF>>                             {  return 'EOF'}
-.                     //manejo de errores lexicos
+.                                    {Parser.yy.errores.capturaErrorLexico(yylloc.first_line, yylloc.first_column, yytex)}
 /lex
 
 /* operator associations and precedence */
@@ -86,19 +88,23 @@ let capturarOperadors = false
 
 %% /* language grammar */
 inicio:
-    importacion sentenciasGlobales
+    saltos importacion sentenciasGlobales
+    | importacion sentenciasGlobales
     ;
 
 /*define las importaciones soportadas por el lenguaje*/
 importacion :
-        IMPORT IDD PUNTO EXTENSIONCLR saltos importacion {console.log("encontre una importacion")}
-        |                     
+        comodinImpor importacion {}
+        |             
         ;
 
-
+comodinImpor:
+                IMPORT IDD PUNTO EXTENSIONCLR saltos            {Parser.yy.table.anlizarImport($2+""+$3+""+$4)}
+                | error saltos                  {/*capturar errores*/} 
+                ;
 
 saltos : 
-        SALTO saltos            {console.log("encontre un salto de linea")}
+        SALTO saltos            {}
         | SALTO
         | EOF                           {}
         ;
@@ -109,7 +115,8 @@ variables:
         ;
 
 items_coma:
-        comodinItems items                             
+        comodinItems items   
+        | error saltos                          
         ;
 
 comodinItems:
@@ -119,7 +126,8 @@ comodinItems:
 items :
         IGUAL asignacion                
         | COMA items_coma               
-        | saltos                
+        | saltos  
+        | error saltos              
         ; 
 
 tipo:
@@ -137,6 +145,7 @@ asignVar:
 
 asignacion :
             operation saltos    {contenidoVar = $1}
+            | error saltos
             ;
 
 /*define a las funciones*/
@@ -154,8 +163,8 @@ comss:
 
 
 retornoFuntion :
-                RETURN operation saltos
-                | RETURN saltos
+                RETURN operation saltos         {Parser.yy.table.verificadorRetorno($2)}
+                | RETURN saltos                 {Parser.yy.table.verificarReturnMetod()}
                 ;
 
 parametros:
@@ -181,7 +190,7 @@ sentenciaFn:
         | identadorRecu defMostrar                      {Parser.yy.table.verificadorScope(false,false, false,"Mostrar"); contenidoVar = null; Parser.yy.table.scope = 0; }
         | identadorRecu defSino                         {Parser.yy.table.verificadorScope(false,true, true,"Sino"); contenidoVar = null; Parser.yy.table.scope = 0; }
         | identadorRecu retornoFuntion                  {Parser.yy.table.verificadorScope(false,false, false,"Retorno"); contenidoVar = null; Parser.yy.table.scope = 0; }
-        | identadorRecu llamadaFun                      {Parser.yy.table.verificadorScope(false,false, false,$2);; contenidoVar = null; Parser.yy.table.scope = 0; }
+        | identadorRecu llamadaFun                      {Parser.yy.table.verificadorScope(false,false, false,$2); Parser.yy.table.valoFuncion($2+"", false, false); contenidoVar = null; Parser.yy.table.scope = 0; }
         ;
 
 identadorRecu : 
@@ -214,8 +223,12 @@ sentenciasMetod :
 
 /*define la funcion principal*/
 funPrincipal :
-                VOID PRINCIPAL PARENTESISA PARENTESISC DOPUNTO saltos sentenciasFuncion
+               comodinFunPrim saltos sentenciasFuncion {Parser.yy.table.claseTem.capturarInstruccioneFuncion()}
                 ;
+
+comodinFunPrim:
+                VOID PRINCIPAL PARENTESISA PARENTESISC DOPUNTO  {Parser.yy.table.claseTem.instanciaNewFuncion($2,Parser.yy.tipoVar.VOID)}
+        ;
 /*describe las llamadas a funciones*/
 llamadaFun :
         IDD PARENTESISA PARENTESISC saltos      {$$ = $1}
@@ -243,10 +256,10 @@ sentenciasGlobales :
                 ;
 
 sentenciaGlobales :
-                funtions
+                funtions                {Parser.yy.table.existReturn()}
                 | asignVar              {Parser.yy.table.asignarValorVarGlobal($1+"",contenidoVar); contenidoVar = null}
                 | variables             {Parser.yy.table.capturarVariableGlobal(tipoAux,contenidoVar);contenidoVar = null} 
-                | metod
+                | metod                 {}
                 | funPrincipal
                 ;
 
@@ -282,7 +295,7 @@ defMostrar :
                 ;
 
 parametroMostrar :
-                stringOidd COMA parametrosLlamada
+                stringOidd COMA parametroMostrar
                 | stringOidd
                 ;
 stringOidd : 
@@ -298,7 +311,7 @@ terminalsOP :
             | CARACTER          {$$ = yytext; }
             | CADENA            {$$ = yytext; }
             | IDD               {$$ = Parser.yy.table.contenidoVariable($1+"");}
-            | llamadaFunOP      {$$ = Parser.yy.table.valoFuncion($1+"")}
+            | llamadaFunOP      {$$ = Parser.yy.table.valoFuncion($1+"", true, false)}
             ;
 
 /*define el lenguje de una expresion(relacional, aritmetica y logica)*/

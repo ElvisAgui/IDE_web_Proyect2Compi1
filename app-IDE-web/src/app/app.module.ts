@@ -5,11 +5,13 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TextAreaComponent } from './text-area/text-area.component';
+import { NavbarComponent } from './navbar/navbar.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TextAreaComponent
+    TextAreaComponent,
+    NavbarComponent
   ],
   imports: [
     BrowserModule,

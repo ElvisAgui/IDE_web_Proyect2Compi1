@@ -11,17 +11,19 @@ let capturarOperadors = false
 %lex
 %options case-sensitive
 %%
+"!!".*	                             {/*Comentario de una linea*/}
+\'\'\'(.|\f|\n|\r|\s|\t)*\'\'\'      {/*comentrio multilinea xd*/    }
 [\t]                                { return 'IDENTADOR'}
 [\n]                                { return 'SALTO'} 
 [\r|\s|\f]+                         { /*ignoramos */  }                
 "Importar"                          { return 'IMPORT'}
 "."                                 { return 'PUNTO'}
-"clr"                               { return 'EXTENSIONCLR'} 
+"crl"                               { return 'EXTENSIONCLR'} 
 "Incerteza"                         { return 'INSERTEZA'}
 "true"                              { return 'TRUE'}
 "false"                             {  return 'FALSE'}
-\"[^\"]*\"                          {yytext = yytext.substr(1,yyleng-2); Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'CADENA'; }
-"'"[^]"'"                           {yytext = yytext.substr(1,yyleng-2); Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'CARACTER'; }
+\"[^\"]*\"                          {yytext = yytext.substr(1,yyleng-2);   return 'CADENA'; }
+"'"[^]"'"                           {yytext = yytext.substr(1,yyleng-2);   return 'CARACTER'; }
 "Double"                            {return 'DOUBLE'}
 "Boolean"                           {return 'BOOLEAN'}
 "Int"                               { return 'INT'}
@@ -38,7 +40,7 @@ let capturarOperadors = false
 ">"                                 {return 'MAYORQ'}
 "~"                                 {return 'SIGINSERTEZA'}
 "|&"                                {return 'XOR'}
-"&&"                                { return 'AND'}
+"&&"                                {return 'AND'}
 "||"                                {return 'OR'}
 "Retorno"                           {return 'RETURN'}
 "Principal"                         {return 'PRINCIPAL'}
@@ -87,7 +89,8 @@ let capturarOperadors = false
 %%
 
 inicio :
-    sentenciasFuncion
+        saltos sentenciasFuncion
+        |sentenciasFuncion
     ;
 saltos : 
         SALTO saltos                      {}
@@ -107,7 +110,7 @@ comodinIdentado:
 
 
 variables:
-        tipo items_coma            
+        tipo items_coma         {Parser.yy.fun.actulizarValorDeclara()}      
         ;
 
 items_coma:
@@ -115,7 +118,7 @@ items_coma:
         ;
 
 comodinItems:
-        IDD                     { }
+        IDD                     {Parser.yy.fun.capturarIdentificadores($1) }
         ;
 
 items :
@@ -134,13 +137,17 @@ tipo:
 
 /*define la asignacion de una variable ya creada*/
 asignVar:
-        IDD IGUAL asignacion {$$ = $1}
+        IDD IGUAL asignacion {Parser.yy.fun.capturarIdentificadores($1); Parser.yy.fun.actulizarValorAsig(Parser.yy.table)}
         ;
 
 asignacion :
-            operation saltos    {contenidoVar = $1}
+            operation saltos    {Parser.yy.fun.contenidVar = $1}
             ;
 
+retornoFuntion :
+                RETURN operation saltos         {Parser.yy.fun.capturarRetorno($2)}
+                | RETURN saltos                 {}
+                ;
 
 sentenciasFuncion:
                 sentenciaFn sentenciasFuncion
@@ -156,19 +163,27 @@ sentenciaFn:
         | identadorRecu defMostrar                      {Parser.yy.fun.scope = 1}
         | identadorRecu defSino                         {Parser.yy.fun.scope = 1}
         | identadorRecu retornoFuntion                  {Parser.yy.fun.scope = 1}
-        | identadorRecu llamadaFun                      {Parser.yy.fun.scope = 1}
+        | identadorRecu llamadaFun                      {Parser.yy.fun.scope = 1; Parser.yy.table.valoFuncion($2+"", false, Parser.yy.fun.realizar())}
         ;
 
+llamadaFun :
+        IDD PARENTESISA PARENTESISC saltos      {$$ = $1}
+        | IDD PARENTESISA parametrosLlamada PARENTESISC saltos          {$$ = $1}
+        ;
 
 llamadaFunOP:
-        IDD PARENTESISA PARENTESISC 
-        | IDD PARENTESISA parametrosLlamada PARENTESISC 
+        IDD PARENTESISA PARENTESISC                     {$$ = $1}
+        | IDD PARENTESISA parametrosLlamada PARENTESISC         {$$ = $1}
         ;
 
 parametrosLlamada :
-                operation COMA parametrosLlamada
-                | operation
+                comoidnOP COMA parametrosLlamada
+                | comoidnOP
                 ;
+
+comoidnOP:
+        operation               {Parser.yy.table.capturarParametros($1)}
+        ;
 
 /*define la sentencia si - sino*/
 
@@ -192,17 +207,17 @@ incremDecrem :
                 ;
 
 /*define la sentencia mientras*/
-defMientras :llamadaFunOP
+defMientras :
                 MIENTRAS PARENTESISA operation PARENTESISC DOPUNTO saltos
                 ;
 
 /*define la sentencia Mostrar*/
 defMostrar : 
-                MOSTRAR PARENTESISA parametroMostrar PARENTESISC saltos {}
+                MOSTRAR PARENTESISA parametroMostrar PARENTESISC saltos {Parser.yy.fun.realizarMostrar()}
                 ;
 
 parametroMostrar :
-                stringOidd COMA parametrosLlamada
+                stringOidd COMA parametroMostrar
                 | stringOidd
                 ;
 stringOidd : 
@@ -218,7 +233,7 @@ terminalsOP :
             | CARACTER          {$$ = yytext; }
             | CADENA            {$$ = yytext; }
             | IDD               {$$ = Parser.yy.table.contenidoVariableIstr($1+"", Parser.yy.fun);}
-            | llamadaFunOP      {$$ = Parser.yy.table.valoFuncion($1+"")}
+            | llamadaFunOP      {$$ = Parser.yy.table.valoFuncion($1+"",true, Parser.yy.fun.realizar())}
             ;
 
 /*define el lenguje de una expresion(relacional, aritmetica y logica)*/
