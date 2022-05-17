@@ -16,10 +16,10 @@ let capturarOperadors = false
 [\t]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'IDENTADOR'}
 [\n]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'SALTO'} 
 \s+                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); /*ignoramos */  }                
+"Incerteza"                         {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'INSERTEZA'}
 "Importar"                          {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'IMPORT'}
 "."                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'PUNTO'}
 "crl"                               {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'EXTENSIONCLR'} 
-"Incerteza"                         {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'INSERTEZA'}
 "true"                              {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'TRUE'}
 "false"                             {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'FALSE'}
 \"[^\"]*\"                          {yytext = yytext.substr(1,yyleng-2); Parser.yy.errores.capturaTokenstring(yytext, yylloc.last_line, yylloc.last_column);  return 'CADENA'; }
@@ -88,8 +88,8 @@ let capturarOperadors = false
 
 %% /* language grammar */
 inicio:
-    saltos importacion def_incerteza sentenciasGlobales
-    | importacion def_incerteza sentenciasGlobales
+    saltos importacion insertez sentenciasGlobales
+    | importacion insertez sentenciasGlobales
     ;
 
 /*define las importaciones soportadas por el lenguaje*/
@@ -109,8 +109,9 @@ saltos :
         | EOF                           {}
         ;
 
-def_incerteza : INCERTEZA DECIMAL  {Parser.yy.table.claseTem.valorInzerteza = Number($2) }
-            | INCERTEZA ENTERO     {Parser.yy.table.claseTem.valorInzerteza = Number($2) }
+insertez : 
+             INSERTEZA DECIMAL saltos {Parser.yy.table.claseTem.valorInzerteza = Number($2) }
+            | INSERTEZA ENTERO saltos    {Parser.yy.table.claseTem.valorInzerteza = Number($2) }
             |
             ;
 

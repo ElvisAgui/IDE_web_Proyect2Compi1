@@ -121,33 +121,35 @@ export class Clase {
         let funcionNueva = this.funciones[this.funciones.length-1]
         for (let index = 0; index < this.funciones.length-1; index++) {
             const funcion = this.funciones[index];
-            if (this.comparacionNombrTipo(funcionNueva, funcion) && this.comparacionParametros(funcion,funcionNueva)) {
-                //erro la funcion esta repetida
-                this.errores.capturaExpresiones("La funcion ya existe", funcionNueva.identificado+"")
-                yaexiste = true
-                break
+            if (this.nombresIguales(funcionNueva, funcion)) {
+                if (this.tipoIgual(funcionNueva, funcion)) {
+                    if (this.comparacionParametros(funcionNueva, funcion)) {
+                        this.errores.capturaExpresiones("La funcion ya existe", funcionNueva.identificado+"")
+                        yaexiste = true
+                        break
+                    }
+                }else{
+                  //verificar si parametros diferentes  
+                    if (this.comparacionParametros(funcionNueva, funcion)) {
+                        this.errores.capturaExpresiones("La funcion ya existe con otro tipo de retono, conflicto de llamado de funciones", funcionNueva.identificado+"")
+                        yaexiste = true
+                        break
+                    }
+                }
             }
         }
         return yaexiste
     }
 
     private comparacionParametros(funtio1:Funcion, funtion2:Funcion): boolean{
-        let sonIguales = false
+        let sonIguales = true
         if (funtio1.parametros.length == funtion2.parametros.length) {
-            let parametros: Array<Variables> = new Array
-            parametros = parametros.concat(funtio1.parametros)
-            for (let i = 0; i < funtion2.parametros.length; i++) {
-                const parametro = funtion2.parametros[i];
-                for (let index = 0; index < parametros.length; index++) {
-                    const element = parametros[index];
-                    if(parametro.tipo == element.tipo){
-                        parametros.splice(index,1)
-                        break
-                    }
-                }
-            }
-            if (parametros.length == 0) {
-                sonIguales = true
+            for (let index = 0; index < funtio1.parametros.length; index++) {
+                const param = funtio1.parametros[index];
+                if (param.tipo !=  funtion2.parametros[index].tipo) {
+                    sonIguales = false
+                    break
+                } 
             }
         }
 
@@ -157,6 +159,14 @@ export class Clase {
     private comparacionNombrTipo(funtio1:Funcion, funtion2:Funcion): boolean{
         return (funtio1.identificado == funtion2.identificado && funtio1.tipo == funtion2.tipo)
     }
+
+    private nombresIguales(funtio1:Funcion, funtion2:Funcion){
+        return funtio1.identificado == funtion2.identificado
+    }
+
+    private tipoIgual(funtio1:Funcion, funtion2:Funcion){
+        return funtio1.tipo == funtion2.tipo
+    } 
 
 
     public indexVariable(identificador: string): number{

@@ -12,6 +12,7 @@ export class ComunicationService implements CanActivate {
   textSalida: string = ""
   errores:ManejoErrors = new ManejoErrors()
   graficasExpresion: GrapsMod[] = []
+  archivoSelect!:Archivos
 
   constructor() { }
   canActivate(router: ActivatedRouteSnapshot, state:RouterStateSnapshot){

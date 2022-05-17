@@ -142,6 +142,25 @@ export class TextAreaComponent implements OnInit {
         this.entrada = archivo.texto
       }
     }
+  }
+
+  public cerrarPestania(index:any){
+    this.comunication.archivos.splice(index,1);
+    console.log(this.comunication.archivos.length);
+    if (this.comunication.archivos.length===0) {
+      this.entrada="";
+    }else{
+      if (this.comunication.archivos[index]===undefined) {
+        let archivo = this.comunication.archivos[index-1];
+        this.comunication.archivoSelect=archivo;
+        this.entrada=archivo.texto;
+      }else{
+        let archivo = this.comunication.archivos[index];
+        this.comunication.archivoSelect=archivo;
+        this.entrada=archivo.texto;
+      }
+
+    }
 
   }
 
@@ -217,6 +236,41 @@ export class TextAreaComponent implements OnInit {
       title: 'Excelente',
       text: ' Tus archivos de entrada estan correctos'
     })
+  }
+
+  public download(){
+    let indes = -1
+    for (let index = 0; index < this.comunication.archivos.length; index++) {
+      const element = this.comunication.archivos[index];
+      if (element.name == this.nameArchivoActual) {
+        indes = index
+        break
+      }
+    }
+    if (indes != -1) {
+      this.descargars(this.comunication.archivos[indes].texto)
+    }
+    
+  }
+
+
+  public nuevoArchio(){
+    let archi = new Archivos("Archivo nuevo :3","Sin titulo.crl")
+    this.comunication.archivos.push(archi)
+    this.archivos = this.comunication.archivos
+    this.nameArchivoActual = archi.name
+    this.entrada = archi.texto
+  }
+  
+  public descargars(data:any ){
+    const a = document.createElement("a");
+    const contenido=data;
+    const enlc = new Blob([contenido],{type:"text/plain"})
+    const url = window.URL.createObjectURL(enlc);
+    a.href=url;
+    a.download = this.nameArchivoActual;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
 }

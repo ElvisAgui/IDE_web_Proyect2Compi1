@@ -2,15 +2,19 @@
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
+
 <nav class="navbar navbar-icon-top navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand"  > Nuevo </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-            <a class="nav-link btn btn-link" >
+          <a class="nav-link btn btn-link" (click)="nuevoArchio()" >
+            <i class="fa fa-user"></i>
+            Nuevo
+            <span class="sr-only"></span>
+            </a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link btn btn-link" (click)="download()" >
               <i class="fa fa-user"></i>
               Descargar
               <span class="sr-only"></span>
@@ -47,6 +51,7 @@
       <div class="btn-group" role="group" aria-label="Basic example">
         <div *ngFor="let archivo of archivos let i= index">
           <button type="button" (click)="settearText(archivo.name)" class="btn btn-dark">{{archivo.name}}</button>
+          <button class="cerrar btn btn-outline-light" (click)="cerrarPestania(i)"  >x</button>
         </div>
       </div>
       <ngx-codemirror
