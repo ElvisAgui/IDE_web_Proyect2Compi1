@@ -15,7 +15,7 @@ let capturarOperadors = false
 \'\'\'(.|\f|\n|\r|\s|\t)*\'\'\'      {/*comentrio multilinea xd*/    }
 [\t]                                { return 'IDENTADOR'}
 [\n]                                { return 'SALTO'} 
-[\r|\s|\f]+                         { /*ignoramos */  }                
+\s+                                 { /*ignoramos */  }                
 "Importar"                          { return 'IMPORT'}
 "."                                 { return 'PUNTO'}
 "crl"                               { return 'EXTENSIONCLR'} 
@@ -77,7 +77,7 @@ let capturarOperadors = false
 /lex
 
 %left OR XOR AND 
-%left EQUALS NOEQUALS MAYORQ MAYOROI MENORQ MENOROI
+%left EQUALS NOEQUALS MAYORQ MAYOROI MENORQ MENOROI SIGINSERTEZA
 %left MAS MENOS MOD
 %left POR DIVISION
 %left ELEVADO
@@ -91,6 +91,7 @@ let capturarOperadors = false
 inicio :
         saltos sentenciasFuncion
         |sentenciasFuncion
+        | error saltos
     ;
 saltos : 
         SALTO saltos                      {}
@@ -110,7 +111,8 @@ comodinIdentado:
 
 
 variables:
-        tipo items_coma         {Parser.yy.fun.actulizarValorDeclara()}      
+        tipo items_coma         {Parser.yy.fun.actulizarValorDeclara()}  
+        | error    saltos
         ;
 
 items_coma:
@@ -124,7 +126,8 @@ comodinItems:
 items :
         IGUAL asignacion                
         | COMA items_coma               
-        | saltos                
+        | saltos  
+        | error saltos              
         ; 
 
 tipo:
@@ -142,6 +145,7 @@ asignVar:
 
 asignacion :
             operation saltos    {Parser.yy.fun.contenidVar = $1}
+            | error saltos
             ;
 
 retornoFuntion :
@@ -155,20 +159,23 @@ sentenciasFuncion:
                 ;
 
 sentenciaFn:
-        identadorRecu variables                         {Parser.yy.fun.scope = 1}
-        | identadorRecu asignVar                        {Parser.yy.fun.scope = 1}
-        | identadorRecu defSi                           {Parser.yy.fun.scope = 1}                                                
-        | identadorRecu defMientras                     {Parser.yy.fun.scope = 1}
-        | identadorRecu defPara                         {Parser.yy.fun.scope = 1}
-        | identadorRecu defMostrar                      {Parser.yy.fun.scope = 1}
-        | identadorRecu defSino                         {Parser.yy.fun.scope = 1}
-        | identadorRecu retornoFuntion                  {Parser.yy.fun.scope = 1}
-        | identadorRecu llamadaFun                      {Parser.yy.fun.scope = 1; Parser.yy.table.valoFuncion($2+"", false, Parser.yy.fun.realizar())}
+        identadorRecu variables                         {Parser.yy.fun.scope = 0}
+        | identadorRecu asignVar                        {Parser.yy.fun.scope = 0}
+        | identadorRecu defSi                           {Parser.yy.fun.scope = 0}                                                
+        | identadorRecu defMientras                     {Parser.yy.fun.scope = 0}
+        | identadorRecu defPara                         {Parser.yy.fun.scope = 0}
+        | identadorRecu defMostrar                      {Parser.yy.fun.scope = 0}
+        | identadorRecu defSino                         {Parser.yy.fun.scope = 0}
+        | identadorRecu retornoFuntion                  {Parser.yy.fun.scope = 0}
+        | identadorRecu llamadaFun                      {Parser.yy.table.valoFuncion($2+"", false, Parser.yy.fun.realizar()); Parser.yy.fun.scope = 0;}
+        | identadorRecu graficando                      {Parser.yy.fun.scope = 0; }
+        | error 
         ;
 
 llamadaFun :
         IDD PARENTESISA PARENTESISC saltos      {$$ = $1}
         | IDD PARENTESISA parametrosLlamada PARENTESISC saltos          {$$ = $1}
+        | error 
         ;
 
 llamadaFunOP:
@@ -179,6 +186,7 @@ llamadaFunOP:
 parametrosLlamada :
                 comoidnOP COMA parametrosLlamada
                 | comoidnOP
+                | error saltos
                 ;
 
 comoidnOP:
@@ -213,12 +221,13 @@ defMientras :
 
 /*define la sentencia Mostrar*/
 defMostrar : 
-                MOSTRAR PARENTESISA parametroMostrar PARENTESISC saltos {Parser.yy.fun.realizarMostrar()}
+                MOSTRAR PARENTESISA parametroMostrar PARENTESISC saltos {Parser.yy.fun.realizarMostrar(Parser.yy.table)}
                 ;
 
 parametroMostrar :
                 stringOidd COMA parametroMostrar
                 | stringOidd
+                | error saltos
                 ;
 stringOidd : 
         operation        { Parser.yy.fun.capturarItems($1)}
@@ -252,9 +261,42 @@ operation :
         | operation MAYORQ operation               {$$ = Parser.yy.opRelatins.expresioMayorQ($1,$3)}
         | operation MENOROI operation              {$$ = Parser.yy.opRelatins.expresioMenorOI($1,$3)}
         | operation MAYOROI operation              {$$ = Parser.yy.opRelatins.expresioMayorOI($1,$3)}
+        | operation SIGINSERTEZA operation         {$$ = Parser.yy.opRelatins.comparacionIncerteza($1,$3,Parser.yy.fun)}
         | operation OR operation                   {$$ = Parser.yy.opRelatins.expresionOR($1,$3)}
         | operation AND operation                  {$$ = Parser.yy.opRelatins.expresionAnd($1,$3)}
         | operation XOR operation                  {$$ = Parser.yy.opRelatins.expresionXOR($1,$3)}
         | PARENTESISA operation PARENTESISC        {$$ = $2} 
-        | terminalsOP                              {$$ = $1}         	        			 														
+        | terminalsOP                              {$$ = $1}        	        			 														
+        ;
+
+graficando :  
+                DIBUJAREXP PARENTESISA operationGrafica PARENTESISC saltos             {Parser.yy.fun.agregarNodoArbol(Parser.yy.arbol, $3)}
+                ;
+                 
+operationGrafica :
+        operationGrafica MAS operationGrafica	                        {$$ = new Parser.yy.nodo("+","Aritm",[$1,$3]);}   	
+        | operationGrafica MENOS operationGrafica       	        {$$ = new Parser.yy.nodo("-","Aritm",[$1,$3]);}	
+	| operationGrafica POR operationGrafica                         {$$ = new Parser.yy.nodo("*","Aritm",[$1,$3]);}  		
+	| operationGrafica DIVISION operationGrafica                    {$$ = new Parser.yy.nodo("/","Aritm",[$1,$3]); }
+        | operationGrafica ELEVADO  operationGrafica                    {$$ = new Parser.yy.nodo("+","Aritm",[$1,$3]);}
+        | operationGrafica MOD operationGrafica                         {$$ = new Parser.yy.nodo("%","MOD",[$1,$3]);}
+        | MENOS operationGrafica %prec UMINUS                           {$$ = new Parser.yy.nodo("-","Aritm",[$1,$3]);}
+        | NEGADO operationGrafica %prec UMINUS                          {$$ = new Parser.yy.nodo("!","Logica",[$1,$3]);}
+        | operationGrafica EQUALS operationGrafica                      {$$ = new Parser.yy.nodo("==","Relacio",[$1,$3]);}
+        | operationGrafica MENORQ operationGrafica                      {$$ = new Parser.yy.nodo("<","Relacio",[$1,$3]);}
+        | operationGrafica MAYORQ operationGrafica                      {$$ = new Parser.yy.nodo(">","Relacio",[$1,$3]);}
+        | operationGrafica MENOROI operationGrafica                     {$$ = new Parser.yy.nodo("<=","Relacio",[$1,$3]);}
+        | operationGrafica MAYOROI operationGrafica                     {$$ = new Parser.yy.nodo(">=","Relacio",[$1,$3]);}
+        | operationGrafica SIGINSERTEZA operationGrafica                {$$ = new Parser.yy.nodo("~","Insert",[$1,$3]);}
+        | operationGrafica OR operationGrafica                          {$$ = new Parser.yy.nodo("||","Logica",[$1,$3]);}
+        | operationGrafica AND operationGrafica                         {$$ = new Parser.yy.nodo("&&","Logica",[$1,$3]);}
+        | operationGrafica XOR operationGrafica                         {$$ = new Parser.yy.nodo("|&","Logica",[$1,$3]); }
+	| PARENTESISA operationGrafica PARENTESISC                      {$$ = $2} 
+        | DECIMAL                                                       {$$ = new Parser.yy.nodo($1,"Double",[]);}
+        | ENTERO                                                        {$$ = new Parser.yy.nodo($1,"Number",[]);}
+        | TRUE                                                          {$$ = new Parser.yy.nodo("true","Boolean",[]);}
+        | FALSE                                                         {$$ = new Parser.yy.nodo("false","Boolean",[]);}
+        | CARACTER                                                      {$$ = new Parser.yy.nodo($1,"Caracter",[]);}
+        | CADENA                                                        {$$ = new Parser.yy.nodo($1,"Cadena",[]);}
+        | IDD                                                           {$$ = new Parser.yy.nodo($1,"Variable",[]);}
     ;

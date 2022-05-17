@@ -10,6 +10,7 @@ export class Clase {
     items: Array<String>
     errores!:ManejoErrors
     textSali:string = ""
+    valorInzerteza = 0.5
 
     constructor(){
         this.funciones = new Array
@@ -81,6 +82,7 @@ export class Clase {
 
     public instanciaNewFuncion(identificador:string, tipo:TipoVar){
         this.funciones.push(new Funcion(identificador, tipo, this.errores))
+        this.funciones[this.funciones.length-1].valoInzer = this.valorInzerteza
     }  
     
     public capturarParametros(identificador:string, tipo:TipoVar){

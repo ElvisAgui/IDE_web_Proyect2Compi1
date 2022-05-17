@@ -1,3 +1,4 @@
+import { Funcion } from './../tableSimbol/funcion';
 import { ManejoErrors } from 'src/clases/manejoErrors/manejo-errors';
 import { TipoVar } from '../tableSimbol/tipo-var';
 import { TipoRelacion } from './tipo-relacion';
@@ -350,5 +351,64 @@ export class OperationLogica {
 
             return false
         }
+    }
+
+
+    public comparacionIncerteza(val1:any,val2:any, fun:Funcion):any{
+        let incerteza=fun.valoInzer
+        let resultado=false;
+        if (val1 != undefined && val2 != undefined) {
+            if (typeof val1 === 'number' && typeof val2 === 'number') {
+                let dif=val1 - val2;
+                let aux = Math.abs(dif);
+                if (incerteza>aux) {
+                    resultado=true;
+                }      
+            }else if (typeof val1 === 'string' && typeof val2 === 'string') {
+                let texto1=val1.trim();
+                let texto2=val2.trim();
+                let aux1 = texto1.toLowerCase();
+                let aux2 = texto2.toLowerCase();
+                if (aux1===aux2) {
+                    resultado = true;
+                }
+
+            }else{
+                console.log("error de tipo")
+            }
+        }else{
+            //error
+            console.log("error incerteza")
+        }
+        return resultado;
+    }
+
+    public comparacionIncertezaF(val1:any,val2:any):any{
+        let incerteza=0.5
+        let resultado=false;
+        if (val1 != undefined && val2 != undefined) {
+            if (typeof val1 === 'number' && typeof val2 === 'number') {
+                let dif=val1 - val2;
+                let aux = Math.abs(dif);
+                if (incerteza>aux) {
+                    resultado=true;
+                }      
+            }else if (typeof val1 === 'string' && typeof val2 === 'string') {
+                let texto1=val1.trim();
+                let texto2=val2.trim();
+                let aux1 = texto1.toLowerCase();
+                let aux2 = texto2.toLowerCase();
+                if (aux1===aux2) {
+                    resultado = true;
+                }
+
+            }else{
+                console.log("error de tipo")
+            }
+        }else{
+            //error
+            console.log("error incerteza")
+        }
+        return resultado;
     }
 }

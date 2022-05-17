@@ -6,12 +6,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TextAreaComponent } from './text-area/text-area.component';
 import { NavbarComponent } from './navbar/navbar.component';
+import { ReportErrorComponent } from './report-error/report-error.component';
+import { ImagenesComponent } from './imagenes/imagenes.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TextAreaComponent,
-    NavbarComponent
+    NavbarComponent,
+    ReportErrorComponent,
+    ImagenesComponent
   ],
   imports: [
     BrowserModule,

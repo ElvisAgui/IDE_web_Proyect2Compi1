@@ -1,3 +1,4 @@
+import { ArbolExpr } from './../arbol-expr';
 import { TableSimbol } from './table-simbol';
 import { Si } from './../instrucciones/si';
 import { TipoInstruc } from './../instrucciones/tipo-instruc';
@@ -5,6 +6,7 @@ import { Instruccion } from './../instrucciones/instruccion';
 import { ManejoErrors } from 'src/clases/manejoErrors/manejo-errors';
 import { TipoVar } from './tipo-var';
 import { Variables } from "./variables"
+import { Nodo } from '../nodo';
 
 export class Funcion {
 
@@ -16,11 +18,12 @@ export class Funcion {
     errores: ManejoErrors
     instrucciones :string = ""
     instrucs : Instruccion = new Instruccion(1, TipoInstruc.LIBRE)
-    scope = 0
+    scope = 0 
     itemsMostrar: Array<string> = new Array
     textoSalida:string = ""
     identificadores: Array<string> = new Array
     contenidVar!:any
+    valoInzer = 0.5
 
     constructor(identificador: String, tipo: TipoVar, errores: ManejoErrors){
         this.variables = new Array
@@ -192,7 +195,6 @@ export class Funcion {
         }else{
             //manejar un posible error que no tenga ningun istruccion (lista de pendientes xd)
         }
-        parser.Parser.yy.table.textoSalida += this.textoSalida
         this.textoSalida = ""
         if (parser.Parser.yy.funciones.length > 1) {
             parser.Parser.yy.funciones.pop()
@@ -229,14 +231,18 @@ export class Funcion {
         this.itemsMostrar.push(valor+"")
     }
 
-    public realizarMostrar(){
+    public realizarMostrar(table: TableSimbol){
+        console.log(this.realizar())
         if (this.realizar()) {
             this.salidaMostrar()
+            table.textoSalida += this.textoSalida
+            this.textoSalida = ""
         }
        this.itemsMostrar.splice(0,this.itemsMostrar.length)
     }
 
     public realizar():boolean{
+        console.log(this.scope)
         if (this.scope == 1) {
             this.instrucs.condicionSi =  false
             return true
@@ -334,6 +340,14 @@ export class Funcion {
             this.retornoBasura
         }
         return this.retorno
+    }
+
+    public agregarNodoArbol(arbol: ArbolExpr, nodo:Nodo){
+        console.log("faasdfasfasdfas fadsfkasdjflasd ") 
+        if (this.realizar()) {
+            console.log("asignado nodo al arboñ")
+            arbol.agregarNodo(nodo)
+        }
     }
        
         

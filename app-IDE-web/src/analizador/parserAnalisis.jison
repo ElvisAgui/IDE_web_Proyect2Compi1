@@ -15,7 +15,7 @@ let capturarOperadors = false
 \'\'\'(.|\f|\n|\r|\s|\t)*\'\'\'      {/*comentrio multilinea xd*/    }
 [\t]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column);  return 'IDENTADOR'}
 [\n]                                {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'SALTO'} 
-[\r|\s|\f]+                         { Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); /*ignoramos */  }                
+\s+                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); /*ignoramos */  }                
 "Importar"                          {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'IMPORT'}
 "."                                 {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'PUNTO'}
 "crl"                               {Parser.yy.errores.capturaTokens(yytext, yylloc.last_line, yylloc.last_column); return 'EXTENSIONCLR'} 
@@ -78,7 +78,7 @@ let capturarOperadors = false
 
 /* operator associations and precedence */
 %left OR XOR AND 
-%left EQUALS NOEQUALS MAYORQ MAYOROI MENORQ MENOROI
+%left EQUALS NOEQUALS MAYORQ MAYOROI MENORQ MENOROI SIGINSERTEZA
 %left MAS MENOS MOD
 %left POR DIVISION
 %left ELEVADO
@@ -88,8 +88,8 @@ let capturarOperadors = false
 
 %% /* language grammar */
 inicio:
-    saltos importacion sentenciasGlobales
-    | importacion sentenciasGlobales
+    saltos importacion def_incerteza sentenciasGlobales
+    | importacion def_incerteza sentenciasGlobales
     ;
 
 /*define las importaciones soportadas por el lenguaje*/
@@ -100,7 +100,7 @@ importacion :
 
 comodinImpor:
                 IMPORT IDD PUNTO EXTENSIONCLR saltos            {Parser.yy.table.anlizarImport($2+""+$3+""+$4)}
-                | error saltos                  {/*capturar errores*/} 
+                | error saltos                                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
                 ;
 
 saltos : 
@@ -109,6 +109,11 @@ saltos :
         | EOF                           {}
         ;
 
+def_incerteza : INCERTEZA DECIMAL  {Parser.yy.table.claseTem.valorInzerteza = Number($2) }
+            | INCERTEZA ENTERO     {Parser.yy.table.claseTem.valorInzerteza = Number($2) }
+            |
+            ;
+
 /*define las declaraciones de variables*/
 variables:
         tipo items_coma         {$$ = $1}   
@@ -116,7 +121,7 @@ variables:
 
 items_coma:
         comodinItems items   
-        | error saltos                          
+        | error saltos             {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)}              
         ;
 
 comodinItems:
@@ -127,7 +132,7 @@ items :
         IGUAL asignacion                
         | COMA items_coma               
         | saltos  
-        | error saltos              
+        | error saltos                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)}      
         ; 
 
 tipo:
@@ -145,12 +150,12 @@ asignVar:
 
 asignacion :
             operation saltos    {contenidoVar = $1}
-            | error saltos
+            | error saltos                              {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
             ;
 
 /*define a las funciones*/
 funtions : 
-        comodinIDFun saltos sentenciasFuncion        {Parser.yy.table.claseTem.capturarInstruccioneFuncion()}
+        comodinIDFun saltos sentenciasFuncion                      {Parser.yy.table.claseTem.capturarInstruccioneFuncion()}
         ;
  
 comodinIDFun:
@@ -158,18 +163,20 @@ comodinIDFun:
         | comss  parametros PARENTESISC DOPUNTO      {Parser.yy.table.verificarFuncion()}
         ;
 comss:
-        tipo IDD  PARENTESISA              {Parser.yy.table.claseTem.instanciaNewFuncion($2,tipoAux)}
+        tipo IDD  PARENTESISA              {Parser.yy.table.claseTem.instanciaNewFuncion($2,tipoAux)}        
         ;
 
 
 retornoFuntion :
                 RETURN operation saltos         {Parser.yy.table.verificadorRetorno($2)}
                 | RETURN saltos                 {Parser.yy.table.verificarReturnMetod()}
+                | error saltos                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
                 ;
 
 parametros:
         param COMA parametros
         | param
+        | error saltos                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
         ;
 
 param:
@@ -179,6 +186,7 @@ param:
 sentenciasFuncion:
                 sentenciaFn sentenciasFuncion           {Parser.yy.table.controlCero()}
                 | sentenciaFn                           {Parser.yy.table.controlCero()}
+                | error saltos                          {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
                 ;
 
 sentenciaFn:
@@ -191,12 +199,14 @@ sentenciaFn:
         | identadorRecu defSino                         {Parser.yy.table.verificadorScope(false,true, true,"Sino"); contenidoVar = null; Parser.yy.table.scope = 0; }
         | identadorRecu retornoFuntion                  {Parser.yy.table.verificadorScope(false,false, false,"Retorno"); contenidoVar = null; Parser.yy.table.scope = 0; }
         | identadorRecu llamadaFun                      {Parser.yy.table.verificadorScope(false,false, false,$2); Parser.yy.table.valoFuncion($2+"", false, false); contenidoVar = null; Parser.yy.table.scope = 0; }
+        | identadorRecu graficando                      {Parser.yy.table.verificadorScope(false,false, false,$2); contenidoVar = null; Parser.yy.table.scope = 0; }
         ;
 
 identadorRecu : 
                 comodinIdentado identadorRecu
                 | comodinIdentado
                 ;
+
 comodinIdentado:
         IDENTADOR               {Parser.yy.table.scope++; scope++; Parser.yy.table.scopeVerific++;}
         ;
@@ -218,6 +228,7 @@ comodinMetod:
 sentenciasMetod :
                 sentenciaFn sentenciasMetod
                 | sentenciaFn
+                | error saltos                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
                 ;
 
 
@@ -229,6 +240,8 @@ funPrincipal :
 comodinFunPrim:
                 VOID PRINCIPAL PARENTESISA PARENTESISC DOPUNTO  {Parser.yy.table.claseTem.instanciaNewFuncion($2,Parser.yy.tipoVar.VOID)}
         ;
+
+        
 /*describe las llamadas a funciones*/
 llamadaFun :
         IDD PARENTESISA PARENTESISC saltos      {$$ = $1}
@@ -243,6 +256,8 @@ llamadaFunOP:
 parametrosLlamada :
                 comoidnOP COMA parametrosLlamada
                 | comoidnOP
+                | error saltos                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
+
                 ;
 
 comoidnOP:
@@ -297,9 +312,15 @@ defMostrar :
 parametroMostrar :
                 stringOidd COMA parametroMostrar
                 | stringOidd
+                | error saltos                  {Parser.yy.errores.capturarErrorSintactico(this._$.first_line, this._$.first_column,yytext)} 
                 ;
 stringOidd : 
         operation                       {/*atrapar el itema para verificar su contenido*/}
+        ;
+
+/*define el metodo dibujar expresion*/
+graficando :  
+        DIBUJAREXP PARENTESISA operation PARENTESISC saltos             {}
         ;
 
 /*terminales soportados para las expresiones(relacionales, aritmeticas y logicas)*/
@@ -330,13 +351,10 @@ operation :
         | operation MAYORQ operation               {$$ = Parser.yy.opRelatins.expresioMayorQ($1,$3)}
         | operation MENOROI operation              {$$ = Parser.yy.opRelatins.expresioMenorOI($1,$3)}
         | operation MAYOROI operation              {$$ = Parser.yy.opRelatins.expresioMayorOI($1,$3)}
+        | operation SIGINSERTEZA operation         {$$ = Parser.yy.opRelatins.comparacionIncertezaF($1,$3)}
         | operation OR operation                   {$$ = Parser.yy.opRelatins.expresionOR($1,$3)}
         | operation AND operation                  {$$ = Parser.yy.opRelatins.expresionAnd($1,$3)}
         | operation XOR operation                  {$$ = Parser.yy.opRelatins.expresionXOR($1,$3)}
 	| PARENTESISA operation PARENTESISC        {$$ = $2} 
         | terminalsOP                              {$$ = $1}         	        			 														
     ;
-
-
-
-

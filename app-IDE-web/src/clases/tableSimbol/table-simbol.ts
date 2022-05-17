@@ -20,6 +20,7 @@ export class TableSimbol {
     archivos:Array<Archivos> = new Array
     nombresImports: Array<string> = new Array
     textoSalida:string = ""
+    
 
 
     constructor(errores: ManejoErrors, archivos:Array<Archivos>){
@@ -49,6 +50,7 @@ export class TableSimbol {
             this.errores.setNombreArch(this.nombresImports[this.nombresImports.length-1])
             this.errores.limpiarEnEspera()
         }
+        this.claseTem.valorInzerteza = 0.5
     }
 
     private importValido(nameImport:string):number{

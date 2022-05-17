@@ -116,6 +116,18 @@ export class ManejoErrors {
         token.constructorToken(lexeme,line, column,"Este simbolo no pertenece al lenguaje","Lexico", this.nombreArch)
         this.errores.push(token)
     }
+
+    public capturarErrorSintactico(line:number, column:number, lexeme:string){
+        let token = new Token()
+        if (lexeme == "") {
+            if (this.enEspera.length != 0) {
+                lexeme = this.enEspera[this.enEspera.length-1].lexeme+ ""
+            }
+        }
+        lexeme = "\""+lexeme+"\""
+        token.constructorToken(lexeme,line, column,"El token no pertenece a la estructura","Sintactico", this.nombreArch)
+        this.errores.push(token)
+    }
     
 
 }

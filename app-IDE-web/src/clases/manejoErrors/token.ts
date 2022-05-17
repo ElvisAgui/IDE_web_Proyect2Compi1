@@ -26,4 +26,14 @@ export class Token {
         this.nameArch = nameArch
     }
 
+    public getDescripcion(): string{
+        let descip = ""
+        if (this.tipoErr == "Sintactico" || this.tipoErr == "Lexico") {
+            descip = this.description+" : "+ this.lexeme
+        }else{
+            descip = this.description
+        }
+        return descip
+    }
+
 }
