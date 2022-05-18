@@ -16,7 +16,7 @@ export class TableSimbol {
     parametrosBusqued:Array<any> = new  Array
     scopeVerific = 0
     control: Array<number> = new Array
-    scopeMax = 1
+    scopeMax = 0
     archivos:Array<Archivos> = new Array
     nombresImports: Array<string> = new Array
     textoSalida:string = ""
@@ -41,6 +41,8 @@ export class TableSimbol {
 
     public anlizarImport(nameImport:string){
         let index = this.importValido(nameImport)
+        this.scopeMax = 0
+        this.scopeVerific = 0
         if ( index != -1) {
             this.archivos[index].yaCompilado = true
             this.nombresImports.push(this.archivos[index].name)
@@ -50,6 +52,8 @@ export class TableSimbol {
             this.errores.setNombreArch(this.nombresImports[this.nombresImports.length-1])
             this.errores.limpiarEnEspera()
         }
+        this.scopeMax = 0
+        this.scopeVerific = 0
         this.claseTem.valorInzerteza = 0.5
     }
 
@@ -96,6 +100,10 @@ export class TableSimbol {
                 }
             }
         }
+    }
+
+    public guardarVarPara(identificado:string, condido:any){
+        this.claseTem.funciones[this.claseTem.funciones.length-1].variables.push(new Variables(identificado,TipoVar.INT,this.claseTem.funciones[this.claseTem.funciones.length-1].identificado+"",this.errores,condido))
     }
     
     /**
@@ -215,6 +223,12 @@ export class TableSimbol {
     public validarSi(valor:any){
         if ("boolean" != typeof valor) {
             this.errores.capturarErrorSemantico("La validacion en Si debe ser tipo boolean")
+        }
+    }
+
+    public validarScapes(instu: any){
+        if (this.scope < 2) {
+            this.errores.capturarErrorSemantico("Error en la instruccion: "+instu)
         }
     }
 
@@ -357,6 +371,7 @@ export class TableSimbol {
   public existReturn(){
     if (this.claseTem.funciones[this.claseTem.funciones.length-1].retorno == null && this.claseTem.funciones[this.claseTem.funciones.length-1].tipo != TipoVar.VOID) {
         this.errores.capturarErrorSemantico("la funcion no tiene Retorno")
+        this.claseTem.funciones[this.claseTem.funciones.length-1].retornoBasura()
     }
   }
 

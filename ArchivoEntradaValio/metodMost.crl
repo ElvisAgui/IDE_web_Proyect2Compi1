@@ -1,0 +1,19 @@
+Importar Expresion.crl
+
+Double vals = 3.3
+
+!! metodo de mensjaes
+Void impres(String menaje, Int val1, Int val2):
+	Boolean mayo = mayor(val1,val2)
+	Mostrar(menaje)
+	Si (mayo):
+		Mostrar("el valo :{0} es mayor que el valor {1}", val1,val2)
+	Sino:
+		Mostrar("el valo :{0} es Menor que el valor {1}", val1,val2)
+
+Void dibuEx(Boolean dib, Boolean ss):
+	Si (dib || ss):
+		DibujarEXP((60+5)*vals)
+
+Void dibuEx():
+	DibujarEXP(5~2 && 5+3 != 8)

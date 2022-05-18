@@ -151,6 +151,8 @@ export class Clase {
                     break
                 } 
             }
+        }else{
+            sonIguales = false
         }
 
         return sonIguales

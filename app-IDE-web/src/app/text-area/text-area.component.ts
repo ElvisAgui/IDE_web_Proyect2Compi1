@@ -74,6 +74,7 @@ export class TextAreaComponent implements OnInit {
       this.salida = "Upss hay errores"
       this.comunication.textSalida = ""
       this.comunication.errores = errores
+      this.msgError()
       errores.imprimiErrores()
     }
     
@@ -271,6 +272,15 @@ export class TextAreaComponent implements OnInit {
     a.download = this.nameArchivoActual;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  public msgError(){
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops!',
+      text: 'Se han encontrado errores al compilar el los archivos!'
+    })
+
   }
 
 }

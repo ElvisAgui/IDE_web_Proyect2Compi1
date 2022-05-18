@@ -48,7 +48,7 @@ export class ManejoErrors {
 
     private tokenDeError(nombre:string): Token{
         let toke = this.enEspera[this.enEspera.length-1];
-        for (let index = 0; index < this.enEspera.length; index++) {
+        for (let index = this.enEspera.length-1; index >= 0; index--) {
             const tmp = this.enEspera[index];
             if (tmp.lexeme == nombre) {
                 toke = tmp
@@ -119,14 +119,22 @@ export class ManejoErrors {
 
     public capturarErrorSintactico(line:number, column:number, lexeme:string){
         let token = new Token()
-        if (lexeme == "") {
-            if (this.enEspera.length != 0) {
-                lexeme = this.enEspera[this.enEspera.length-1].lexeme+ ""
-            }
-        }
+        lexeme = this.lexemeCorrecto(lexeme)
         lexeme = "\""+lexeme+"\""
         token.constructorToken(lexeme,line, column,"El token no pertenece a la estructura","Sintactico", this.nombreArch)
         this.errores.push(token)
+    }
+
+    public lexemeCorrecto(lexes:string): string{
+        let lexe = lexes
+        for (let index = this.enEspera.length-1; index >= 0; index--) {
+            const tmp = this.enEspera[index];
+            if (tmp.lexeme != "\s" || tmp.lexeme!= "\n" || tmp.lexeme != "\t"|| tmp.lexeme != "") {
+                lexe = tmp.lexeme+""
+                break
+            }
+        }
+        return lexe
     }
     
 

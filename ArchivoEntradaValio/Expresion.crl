@@ -1,0 +1,17 @@
+!! expresiones ralcionales 
+
+Incerteza 0.3
+
+
+
+!! funcion simple
+Boolean mayor(Int val1, Int val2):
+	Boolean resultado
+	resultado = val1>val2
+	Retorno resultado
+
+Boolean insertes(Int val1, Int val2):
+	Boolean resultado
+	resultado = val1~val2
+	Retorno resultado
+

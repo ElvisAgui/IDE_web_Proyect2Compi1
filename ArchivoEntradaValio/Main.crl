@@ -1,0 +1,32 @@
+!! este archivo es valido para el IDE, debe usar el tabulador correctamente XD
+
+!! aqui estoy declarando la importacion y la incerteza
+Importar Calculc.crl
+Importar metodMost.crl
+Incerteza 1.5
+
+!!Declaro algunas globales
+Int Estado=(0+10-10)^1
+Int potencia, potencia2 = 5^2
+String palabra, palabra1="Hola Mundo"
+palabra1="Adios Mundo"
+Char caracter = 's'
+Boolean realizar = false
+Boolean negad = !realizar
+!! funcion Principal
+Void Principal():
+	String comienzo = "Empezando la Compilacion :V"
+	Mostrar (comienzo)
+	Si (realizar |& negad):
+		Mostrar ("Fecha actual: {0}", "19 de mayo XD")
+	Sino:
+		DibujarEXP((60+5)*Estado)
+		Mostrar ("entramos al sino y dibujamos expresion")
+	Mostrar ("resulstados obtenidos al invocar metod/fun")
+	Int resul = suma(5,6)
+	Mostrar ("resulstados de la suma es: {0}", resul)
+	resul = resta(5,5)
+	Mostrar ("resulstados de la suma es: {0}", resul)
+	impres(palabra,6,3)
+	DibujarEXP((60+5)*Estado)
+	dibuEx(realizar,negad)

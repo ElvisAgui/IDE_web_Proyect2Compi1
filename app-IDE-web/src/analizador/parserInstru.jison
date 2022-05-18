@@ -169,6 +169,9 @@ sentenciaFn:
         | identadorRecu retornoFuntion                  {Parser.yy.fun.scope = 0}
         | identadorRecu llamadaFun                      {Parser.yy.table.valoFuncion($2+"", false, Parser.yy.fun.realizar()); Parser.yy.fun.scope = 0;}
         | identadorRecu graficando                      {Parser.yy.fun.scope = 0; }
+        | identadorRecu escapes                         { Parser.yy.fun.scope = 0}
+        | identadorRecu graficandoATS                   {Parser.yy.fun.scope = 0 }        
+        | identadorRecu graficandoTS
         | error 
         ;
 
@@ -232,6 +235,19 @@ parametroMostrar :
 stringOidd : 
         operation        { Parser.yy.fun.capturarItems($1)}
         ;
+/*extras*/
+escapes:
+        DETENER saltos                  
+        | CONTINUAR saltos              
+        ;
+
+graficandoATS:
+                DIBUJARAST PARENTESISA IDD PARENTESISC saltos
+                ;
+graficandoTS:
+                DibujarTS PARENTESISA PARENTESISC saltos
+                ;
+
 
 /*terminales soportados para las expresiones(relacionales, aritmeticas y logicas)*/
 terminalsOP :

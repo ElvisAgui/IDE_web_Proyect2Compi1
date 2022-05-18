@@ -1,0 +1,38 @@
+!! esta es el archivo Calculc.crl donde se realizan operacion simulando calculadora
+
+Incerteza 1.5
+
+!! funcion simple
+Int suma(Int val1, Int val2):
+	Int resultado
+	resultado = val1+val2
+	Retorno resultado
+
+!! funcion simple
+Int resta(Int val1, Int val2):
+	Int resultado
+	resultado = val1-val2
+	Retorno resultado
+
+!! funcion simple de concatenacion
+String suma(String val1, Int val2):
+	String resultado
+	resultado = val1+val2
+	Retorno resultado
+
+!! funcion simple
+Int multi(Int val1, Int val2):
+	Int resultado
+	resultado = val1*val2
+	Retorno resultado
+
+!! funcion simple
+Int div(Int val1, Int val2):
+	Int resultado
+	resultado = val1/val2
+	Retorno resultado
+
+Int pot(Int val1, Int val2):
+	Int resultado
+	resultado = val1^val2
+	Retorno resultado

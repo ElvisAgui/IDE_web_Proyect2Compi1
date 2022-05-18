@@ -332,7 +332,9 @@ export class Funcion {
     }
 
     public capturarRetorno(valor:any){
-        this.retorno = valor
+        if (this.realizar()) {
+            this.retorno = valor
+        }
     }
 
     public getRetorno(): any{

@@ -403,11 +403,11 @@ export class OperationLogica {
                 }
 
             }else{
-                console.log("error de tipo")
+                this.errores.capturaExpresiones("La expresion de inzerteza es invalida", val2)
             }
         }else{
             //error
-            console.log("error incerteza")
+           this.errores.capturaExpresiones("error de expresion : Inzerteza",val1)
         }
         return resultado;
     }

@@ -31,7 +31,7 @@ export class Token {
         if (this.tipoErr == "Sintactico" || this.tipoErr == "Lexico") {
             descip = this.description+" : "+ this.lexeme
         }else{
-            descip = this.description
+            descip = this.description+" ref: "+this.lexeme
         }
         return descip
     }

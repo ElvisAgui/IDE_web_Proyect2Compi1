@@ -201,6 +201,9 @@ sentenciaFn:
         | identadorRecu retornoFuntion                  {Parser.yy.table.verificadorScope(false,false, false,"Retorno"); contenidoVar = null; Parser.yy.table.scope = 0; }
         | identadorRecu llamadaFun                      {Parser.yy.table.verificadorScope(false,false, false,$2); Parser.yy.table.valoFuncion($2+"", false, false); contenidoVar = null; Parser.yy.table.scope = 0; }
         | identadorRecu graficando                      {Parser.yy.table.verificadorScope(false,false, false,$2); contenidoVar = null; Parser.yy.table.scope = 0; }
+        | identadorRecu escapes                         {Parser.yy.table.verificadorScope(false,false, false,$2); contenidoVar = null; Parser.yy.table.scope = 0; }
+        | identadorRecu graficandoATS                   {Parser.yy.table.verificadorScope(false,false, false,$2); contenidoVar = null; Parser.yy.table.scope = 0; }        
+        | identadorRecu graficandoTS                    {Parser.yy.table.verificadorScope(false,false, false,$2); contenidoVar = null; Parser.yy.table.scope = 0; }        
         ;
 
 identadorRecu : 
@@ -292,7 +295,11 @@ defSino :
 
 /*define la sentencia para */
 defPara:
-        PARA PARENTESISA INT IDD IGUAL operation PUNTOCOMA operation PUNTOCOMA incremDecrem PARENTESISC DOPUNTO saltos
+        PARA PARENTESISA comodinVar  PUNTOCOMA operation PUNTOCOMA incremDecrem PARENTESISC DOPUNTO saltos
+        ;
+
+comodinVar:
+        INT IDD IGUAL operation                  {Parser.yy.table.guardarVarPara($2,$3);}
         ;
 
 incremDecrem :
@@ -323,6 +330,18 @@ stringOidd :
 graficando :  
         DIBUJAREXP PARENTESISA operation PARENTESISC saltos             {}
         ;
+
+escapes:
+        DETENER saltos                  {Parser.yy.table.validarScapes($1)}
+        | CONTINUAR saltos              {Parser.yy.table.validarScapes($1)}
+        ;
+
+graficandoATS:
+                DIBUJARAST PARENTESISA IDD PARENTESISC saltos
+                ;
+graficandoTS:
+                DibujarTS PARENTESISA PARENTESISC saltos
+                ;
 
 /*terminales soportados para las expresiones(relacionales, aritmeticas y logicas)*/
 terminalsOP :
